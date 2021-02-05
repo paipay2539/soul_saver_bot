@@ -1,5 +1,6 @@
 from ahk import AHK
 import time
+import threading
 # import pyautogui
 # import cv2
 from opencvKeyboardDetect import waitKeyFunc
