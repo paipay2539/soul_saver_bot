@@ -25,27 +25,36 @@ class soulSaverBot:
         self.IsFullScreenX = 0
         self.IsFullScreenY = 0
 
+        self.AnyKeyPress = 0
+        self.SpacebarChecker = 0
+        self.CountDownTime = 0
         self.Active = False
         self.Exit = False
-        keyboard.add_hotkey('alt+x', self.triggeredAltx)
-        keyboard.add_hotkey('esc', self.triggeredAltx)
+        keyboard.add_hotkey('spacebar', self.triggeredAltx)
+        keyboard.add_hotkey('esc', self.triggeredEsc)
         while self.Exit is False:
             time.sleep(0.1)
-            print("mainloop now")
-            pass
+            if self.Active is True:
+                # self.MainTask()
+                print("mainloop")
+                pass
+        print("end")
 
     def task100ms(self):
         if self.Active is True:
             threading.Timer(0.1, self.task100ms).start()
-        self.MainTask()
+        # self.MainTask()
+        print("task100ms")
 
     def triggeredAltx(self):  # can't use arg
+        print("space")
         if self.Counter == 0:
             self.Counter = 1
             self.InitialPos()
         self.Active = not self.Active
         if self.Active is True:
-            self.task100ms()
+            # self.task100ms()
+            pass
         else:
             self.SpacebarChecker = 1
             self.ahk.key_up('Control')
@@ -85,17 +94,28 @@ class soulSaverBot:
         self.MouseXHP = self.MouseXHP - 20
         self.MouseXMP = self.MouseXMP - 50
 
-        self.colorHP = self.ahk.pixel_get_color(self.MouseXHP, self.MouseYHP)
-        self.colorMP = self.ahk.pixel_get_color(self.MouseXMP, self.MouseYMP)
-        self.color1 = self.ahk.pixel_get_color(self.MouseX1, self.MouseY1)
-        self.color2 = self.ahk.pixel_get_color(self.MouseX2, self.MouseY2)
-        self.color3 = self.ahk.pixel_get_color(self.MouseX3, self.MouseY3)
-        self.color4 = self.ahk.pixel_get_color(self.MouseX4, self.MouseY4)
-        self.color5 = self.ahk.pixel_get_color(self.MouseX5, self.MouseY5)
-        self.color6 = self.ahk.pixel_get_color(self.MouseX6, self.MouseY6)
-        self.colorV = self.ahk.pixel_get_color(self.MouseXV, self.MouseYV)
-        self.colorB = self.ahk.pixel_get_color(self.MouseXB, self.MouseYB)
-        self.colorN = self.ahk.pixel_get_color(self.MouseXN, self.MouseYN)
+        self.colorHP_start = self.ahk.pixel_get_color(self.MouseXHP,
+                                                      self.MouseYHP)
+        self.colorMP_start = self.ahk.pixel_get_color(self.MouseXMP,
+                                                      self.MouseYMP)
+        self.color1_start = self.ahk.pixel_get_color(self.MouseX1,
+                                                     self.MouseY1)
+        self.color2_start = self.ahk.pixel_get_color(self.MouseX2,
+                                                     self.MouseY2)
+        self.color3_start = self.ahk.pixel_get_color(self.MouseX3,
+                                                     self.MouseY3)
+        self.color4_start = self.ahk.pixel_get_color(self.MouseX4,
+                                                     self.MouseY4)
+        self.color5_start = self.ahk.pixel_get_color(self.MouseX5,
+                                                     self.MouseY5)
+        self.color6_start = self.ahk.pixel_get_color(self.MouseX6,
+                                                     self.MouseY6)
+        self.colorV_start = self.ahk.pixel_get_color(self.MouseXV,
+                                                     self.MouseYV)
+        self.colorB_start = self.ahk.pixel_get_color(self.MouseXB,
+                                                     self.MouseYB)
+        self.colorN_start = self.ahk.pixel_get_color(self.MouseXN,
+                                                     self.MouseYN)
 
         if ((self.IsFullScreenX != 0) and (self.IsFullScreenY != 0)):
             self.colorHP_start = "0x4A4AFF"
@@ -154,8 +174,6 @@ class soulSaverBot:
     def SkillExecute(self, MouseXNOW, MouseYNOW,
                      PixelStart, SkillButton, SkillEnable, Refills="OFF"):
         self.CheckAnyKeyPress()
-        self.AnyKeyPress
-        self.SpacebarChecker
         if ((self.AnyKeyPress == 0 and SkillEnable == 1)
                 or (Refills == "HP" or Refills == "MP")):
             PixelNow = self.ahk.pixel_get_color(MouseXNOW, MouseYNOW)
@@ -202,18 +220,18 @@ class soulSaverBot:
                 or KeyPressRight is True
                 or KeyPressLeft is True):
             self.AnyKeyPress = 1
-            CountDownTime = 0
+            self.CountDownTime = 0
             if ((KeyPressRight is True or KeyPressLeft is True)
                     and (KeyPressUp is False)
                     and (KeyPressControl is False)
                     and (self.PickUpEnable is False)):
                 self.ControlHold()
         else:
-            if CountDownTime >= 5:
+            if self.CountDownTime >= 5:
                 self.AnyKeyPress = 0
             else:
                 self.AnyKeyPress = 1
-                CountDownTime += 1
+                self.CountDownTime += 1
 
     def ControlHold(self):
         self.ahk.key_down('Control')
