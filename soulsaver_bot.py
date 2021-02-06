@@ -1,12 +1,14 @@
 from ahk import AHK
 import time
 import threading
+import keyboard
 # import pyautogui
 # import cv2
-from opencvKeyboardDetect import waitKeyFunc
+# from opencvKeyboardDetect import waitKeyFunc
 
 
 class soulSaverBot:
+
     def __init__(self):
         self.ahk = AHK()
         self.BuffCheck = 1
@@ -23,19 +25,33 @@ class soulSaverBot:
         self.IsFullScreenX = 0
         self.IsFullScreenY = 0
 
-        Active = False
-        while True:
+        self.Active = False
+        self.Exit = False
+        keyboard.add_hotkey('alt+x', self.triggeredAltx)
+        keyboard.add_hotkey('esc', self.triggeredAltx)
+        while self.Exit is False:
             time.sleep(0.1)
-            if self.Counter == 0:
-                self.Counter = 1
-                self.InitialPos()
-            if waitKeyFunc() == 27:
-                Active = True
-            if Active is True:
-                self.MainTask()
-            else:
-                self.SpacebarChecker = 1
-                self.ahk.key_up('Control')
+            print("mainloop now")
+            pass
+
+    def task100ms(self):
+        if self.Active is True:
+            threading.Timer(0.1, self.task100ms).start()
+        self.MainTask()
+
+    def triggeredAltx(self):  # can't use arg
+        if self.Counter == 0:
+            self.Counter = 1
+            self.InitialPos()
+        self.Active = not self.Active
+        if self.Active is True:
+            self.task100ms()
+        else:
+            self.SpacebarChecker = 1
+            self.ahk.key_up('Control')
+
+    def triggeredEsc(self):
+        self.Exit = True
 
     def InitialPos(self):
         self.MouseX = 180 - self.IsFullScreenX
