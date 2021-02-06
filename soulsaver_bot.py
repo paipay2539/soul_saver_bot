@@ -1,6 +1,6 @@
 from ahk import AHK
 import time
-import threading
+# import threading
 import keyboard
 # import pyautogui
 # import cv2
@@ -8,7 +8,6 @@ import keyboard
 
 
 class soulSaverBot:
-
     def __init__(self):
         self.ahk = AHK()
         self.BuffCheck = 1
@@ -30,21 +29,15 @@ class soulSaverBot:
         self.CountDownTime = 0
         self.Active = False
         self.Exit = False
+
         keyboard.add_hotkey('spacebar', self.triggeredAltx)
         keyboard.add_hotkey('esc', self.triggeredEsc)
         while self.Exit is False:
             time.sleep(0.1)
             if self.Active is True:
-                # self.MainTask()
+                self.MainTask()
                 print("mainloop")
-                pass
         print("end")
-
-    def task100ms(self):
-        if self.Active is True:
-            threading.Timer(0.1, self.task100ms).start()
-        # self.MainTask()
-        print("task100ms")
 
     def triggeredAltx(self):  # can't use arg
         print("space")
@@ -53,7 +46,6 @@ class soulSaverBot:
             self.InitialPos()
         self.Active = not self.Active
         if self.Active is True:
-            # self.task100ms()
             pass
         else:
             self.SpacebarChecker = 1
@@ -148,17 +140,17 @@ class soulSaverBot:
             self.BuffCheck = 0
 
         self.SkillExecute(self.MouseXHP, self.MouseYHP,
-                          self.colorHP_start, 5, 1, "HP")
+                          self.colorHP_start, "5", 1, "HP")
         self.SkillExecute(self.MouseXMP, self.MouseYMP,
-                          self.colorMP_start, 6, 1, "MP")
+                          self.colorMP_start, "6", 1, "MP")
         self.SkillExecute(self.MouseX1, self.MouseY1,
-                          self.color1_start, 1, self.SkillEnable1)
+                          self.color1_start, "1", self.SkillEnable1)
         self.SkillExecute(self.MouseX2, self.MouseY2,
-                          self.color2_start, 2, self.SkillEnable2)
+                          self.color2_start, "2", self.SkillEnable2)
         self.SkillExecute(self.MouseX3, self.MouseY3,
-                          self.color3_start, 3, self.SkillEnable3)
+                          self.color3_start, "3", self.SkillEnable3)
         self.SkillExecute(self.MouseX4, self.MouseY4,
-                          self.color4_start, 4, self.SkillEnable4)
+                          self.color4_start, "4", self.SkillEnable4)
         self.ahk.key_up('Control')
         # KeyPressControl = "False"
         # ControlHold()
@@ -183,7 +175,7 @@ class soulSaverBot:
                 #     time.sleep(0.10)
                 #     self.ahk.key_up(SkillButton)
                 #     time.sleep(0.35)
-                if PixelNow == self.PixelStart:
+                if PixelNow == PixelStart:
                     LoopChecker = 0
                     while True:
                         self.ahk.key_down(SkillButton)
@@ -192,14 +184,14 @@ class soulSaverBot:
                         time.sleep(0.01)
                         PixelNow = self.ahk.pixel_get_color(MouseXNOW,
                                                             MouseYNOW)
-                        if (PixelNow != self.PixelStart
+                        if (PixelNow != PixelStart
                                 or LoopChecker >= 20
                                 or self.SpacebarChecker == 1):
                             self.SpacebarChecker = 0
                             break
                         LoopChecker += 1
             else:
-                if PixelNow != self.PixelStart:
+                if PixelNow != PixelStart:
                     self.ahk.key_down(SkillButton)
                     time.sleep(0.10)
                     self.ahk.key_up(SkillButton)
