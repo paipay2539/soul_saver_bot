@@ -12,8 +12,13 @@ class MyThread(threading.Thread):
             # call a function
 
 
-stopFlag = threading.Event()
-thread = MyThread(stopFlag)
-thread.start()
-# this will stop the timer
-stopFlag.set()
+def main():
+    stopFlag = threading.Event()
+    thread = MyThread(stopFlag)
+    thread.start()
+    # this will stop the timer
+    stopFlag.set()
+
+
+if __name__ == '__main__':
+    main()
