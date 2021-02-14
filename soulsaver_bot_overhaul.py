@@ -12,7 +12,7 @@ import numpy as np
 class soulSaverBot:
     def __init__(self):
         self.ahk = AHK()
-        self.BuffCheck = 1
+        self.BuffCheck = False  # no check buff
         self.Counter = 0
         self.IsFullScreen = 0
         self.SkillEnable1 = 0
@@ -31,8 +31,8 @@ class soulSaverBot:
         self.CountDownTime = 0
         self.Active = False
         self.Exit = False
-        self.wpercent = 50
-        self.hpercent = 50
+        self.wpercent = 100
+        self.hpercent = 100
 
         keyboard.add_hotkey('spacebar', self.triggeredAltx)
         keyboard.add_hotkey('esc', self.triggeredEsc)
@@ -59,7 +59,10 @@ class soulSaverBot:
         print("space")
         if self.Counter == 0:
             self.Counter = 1
-            self.InitialPos()
+            self.windowScreenshot('SoulSaverOnline',  # initial ref frame
+                                  hpercent=self.hpercent,
+                                  wpercent=self.wpercent)
+            self.InitialPos()  # need ref frame from windowScreenshot
         self.Active = not self.Active
         if self.Active is True:
             pass
@@ -80,6 +83,7 @@ class soulSaverBot:
                 win32gui.SetForegroundWindow(hwnd)
                 x, y, x1, y1 = win32gui.GetClientRect(hwnd)
                 x, y = win32gui.ClientToScreen(hwnd, (x, y))
+                self.x_frame, self.y_frame = x, y
                 x1, y1 = win32gui.ClientToScreen(hwnd, (x1 - x, y1 - y))
                 mouse_now_x = int((pyautogui.position()[0]-x)*wpercent/100)
                 mouse_now_y = int((pyautogui.position()[1]-y)*hpercent/100)
@@ -122,7 +126,10 @@ class soulSaverBot:
         self.trackbars()
         trackbars_pos = (int(self.axis_X), int(self.axis_Y))
         '''
-        print(rescale_img[self.button1_pos[1], self.button1_pos[0]])
+        print("getColour:", self.getColour(rescale_img, self.button1_pos),
+              "getColourWindow:", self.getColourWindow(self.button1_pos),
+              "getColourWindowAHK:", self.getColourWindowAHK(self.button1_pos))
+
         text = "X:"+str(self.mouse_now_x)+" Y:"+str(self.mouse_now_y)
         self.drawText(rescale_img, text, text_pos)
         im = cv2.circle(rescale_img, mouse_pos, radius=5,
@@ -159,6 +166,37 @@ class soulSaverBot:
         color = (int(img[pos[1], pos[0]][0]),
                  int(img[pos[1], pos[0]][1]),
                  int(img[pos[1], pos[0]][2]))
+        '''
+        opencv2
+        BGR [255 255 255]
+        print(rescale_img[self.button1_pos[1], self.button1_pos[0]])
+        '''
+        return color
+
+    def getColourWindow(self, pos):
+        window_pos = [[], []]
+        window_pos[0] = int(self.x_frame + pos[0] * (100/self.wpercent))
+        window_pos[1] = int(self.y_frame + pos[1] * (100/self.hpercent))
+        color = (int(pyautogui.pixel(*window_pos)[2]),  # RGB to BGR
+                 int(pyautogui.pixel(*window_pos)[1]),
+                 int(pyautogui.pixel(*window_pos)[0]))
+        '''
+        pyautogui
+        RGB to BGR (255,255,255)
+        '''
+        return color
+
+    def getColourWindowAHK(self, pos):
+        window_pos = [[], []]
+        window_pos[0] = int(self.x_frame + pos[0] * (100/self.wpercent))
+        window_pos[1] = int(self.y_frame + pos[1] * (100/self.hpercent))
+        color = (int(self.ahk.pixel_get_color(*window_pos)[6:8], 16),
+                 int(self.ahk.pixel_get_color(*window_pos)[4:6], 16),
+                 int(self.ahk.pixel_get_color(*window_pos)[2:4], 16))
+        '''
+        ahk
+        RGB to BGR 0xFFFFFF
+        '''
         return color
 
     def drawText(self, img, text, text_pos):
@@ -239,35 +277,25 @@ class soulSaverBot:
         MP (86, 13)
         '''
 
-        self.colorHP_start = self.ahk.pixel_get_color(self.buttonHP_pos[0],
-                                                      self.buttonHP_pos[1])
-        self.colorMP_start = self.ahk.pixel_get_color(self.buttonMP_pos[0],
-                                                      self.buttonMP_pos[1])
-        self.color1_start = self.ahk.pixel_get_color(self.button1_pos[0],
-                                                     self.button1_pos[1])
-        self.color2_start = self.ahk.pixel_get_color(self.button2_pos[0],
-                                                     self.button2_pos[1])
-        self.color3_start = self.ahk.pixel_get_color(self.button3_pos[0],
-                                                     self.button3_pos[1])
-        self.color4_start = self.ahk.pixel_get_color(self.button4_pos[0],
-                                                     self.button4_pos[1])
-        self.color5_start = self.ahk.pixel_get_color(self.button5_pos[0],
-                                                     self.button5_pos[1])
-        self.color6_start = self.ahk.pixel_get_color(self.button6_pos[0],
-                                                     self.button6_pos[1])
-        self.colorV_start = self.ahk.pixel_get_color(self.buttonV_pos[0],
-                                                     self.buttonV_pos[1])
-        self.colorB_start = self.ahk.pixel_get_color(self.buttonB_pos[0],
-                                                     self.buttonB_pos[1])
-        self.colorN_start = self.ahk.pixel_get_color(self.buttonN_pos[0],
-                                                     self.buttonN_pos[1])
-
+        self.colorHP_start = self.getColourWindow(self.buttonHP_pos)
+        self.colorMP_start = self.getColourWindow(self.buttonMP_pos)
+        self.color1_start = self.getColourWindow(self.button1_pos)
+        self.color2_start = self.getColourWindow(self.button2_pos)
+        self.color3_start = self.getColourWindow(self.button3_pos)
+        self.color4_start = self.getColourWindow(self.button4_pos)
+        self.color5_start = self.getColourWindow(self.button5_pos)
+        self.color6_start = self.getColourWindow(self.button6_pos)
+        self.colorV_start = self.getColourWindow(self.buttonV_pos)
+        self.colorB_start = self.getColourWindow(self.buttonB_pos)
+        self.colorN_start = self.getColourWindow(self.buttonN_pos)
+        '''
         if ((self.IsFullScreenX != 0) and (self.IsFullScreenY != 0)):
             self.colorHP_start = "0x4A4AFF"
             self.colorMP_start = "0xFFEE4A"
         else:
             self.colorHP_start = "0x0000FF"
             self.colorMP_start = "0xFF7B00"
+        '''
         return
 
     def PixelUpdate(self):
@@ -295,14 +323,15 @@ class soulSaverBot:
                                                self.buttonN_pos[1])
 
     def MainTask(self):
-        if self.BuffCheck == 1:
+        '''
+        if self.BuffCheck is True:
             self.SkillExecute(self.buttonV_pos[0], self.buttonV_pos[1],
                               self.colorV_start, "v", 1)
             self.SkillExecute(self.buttonB_pos[0], self.buttonB_pos[1],
                               self.colorB_start, "b", 1)
             self.SkillExecute(self.buttonN_pos[0], self.buttonN_pos[1],
                               self.colorN_start, "n", 1)
-            self.BuffCheck = 0
+            self.BuffCheck = False
 
         self.SkillExecute(self.buttonHP_pos[0], self.buttonHP_pos[1],
                           self.colorHP_start, "5", 1, "HP")
@@ -314,6 +343,7 @@ class soulSaverBot:
                           self.color2_start, "2", self.SkillEnable2)
         self.SkillExecute(self.button3_pos[0], self.button3_pos[1],
                           self.color3_start, "3", self.SkillEnable3)
+        '''
         self.SkillExecute(self.button4_pos[0], self.button4_pos[1],
                           self.color4_start, "4", self.SkillEnable4)
         self.ahk.key_up('Control')
