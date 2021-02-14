@@ -6,8 +6,6 @@ import win32gui
 import pyautogui
 import cv2
 import numpy as np
-# from opencvKeyboardDetect import waitKeyFunc
-
 
 class soulSaverBot:
     def __init__(self):
@@ -15,19 +13,16 @@ class soulSaverBot:
         self.BuffCheck = False  # no check buff
         self.Counter = 0
         self.IsFullScreen = 0
-        self.SkillEnable1 = 0
-        self.SkillEnable2 = 0
-        self.IsFullScreen = 0
-        self.SkillEnable1 = 1
-        self.SkillEnable2 = 1
-        self.SkillEnable3 = 1
-        self.SkillEnable4 = 1
+        self.SkillEnable1 = True
+        self.SkillEnable2 = True
+        self.SkillEnable3 = True
+        self.SkillEnable4 = True
         self.PickUpEnable = 1
         self.IsFullScreenX = 0
         self.IsFullScreenY = 0
 
-        self.AnyKeyPress = 0
-        self.SpacebarChecker = 0
+        self.AnyKeyPress = False
+        self.SpacebarChecker = False
         self.CountDownTime = 0
         self.Active = False
         self.Exit = False
@@ -42,15 +37,19 @@ class soulSaverBot:
         cv2.createTrackbar('axis_X', 'SoulSaverOnline_cv', 0, 255,self.nothing)
         cv2.createTrackbar('axis_Y', 'SoulSaverOnline_cv', 0, 255,self.nothing)
         '''
-        #time_start = time.time()
+        # time_start = time.time()
         while self.Exit is False:
-            #print(1/(time.time()-time_start+0.00000001))
-            #time_start = time.time()
+            # print(1/(time.time()-time_start+0.00000001))
+            # time_start = time.time()
             time.sleep(0.1)
             if self.Active is True:
-                # self.MainTask()
+                self.MainTask()
+                '''
                 self.monitoring()
+                '''
                 # print("mainloop")
+            elif self.Active is False and self.Counter == 1:
+                self.NoMainTask()
 
         cv2.destroyAllWindows()
         print("end")
@@ -58,16 +57,16 @@ class soulSaverBot:
     def triggeredAltx(self):  # can't use arg
         print("space")
         if self.Counter == 0:
-            self.Counter = 1
             self.windowScreenshot('SoulSaverOnline',  # initial ref frame
                                   hpercent=self.hpercent,
                                   wpercent=self.wpercent)
             self.InitialPos()  # need ref frame from windowScreenshot
+            self.Counter = 1
         self.Active = not self.Active
         if self.Active is True:
             pass
         else:
-            self.SpacebarChecker = 1
+            self.SpacebarChecker = True
             self.ahk.key_up('Control')
 
     def triggeredEsc(self):
@@ -75,6 +74,8 @@ class soulSaverBot:
 
     def triggeredZ(self):
         print((int(self.mouse_now_x), int(self.mouse_now_y)))
+        # self.Active = False
+        self.BuffCheck = True
 
     def windowScreenshot(self, window_title=None, wpercent=50, hpercent=50):
         if window_title:
@@ -135,7 +136,7 @@ class soulSaverBot:
         im = cv2.circle(rescale_img, mouse_pos, radius=5,
                         color=(0, 255, 255), thickness=-1)
         self.coloring(im)
-        cv2.imshow('SoulSaverOnline_cv', im)
+        # cv2.imshow('SoulSaverOnline_cv', im)
         cv2.waitKey(1)
 
     def nothing(self):
@@ -150,17 +151,17 @@ class soulSaverBot:
     def coloring(self, img):
         show_colour = (0, 255, 255)
         special_colour =  (0, 255, 255)
-        img = cv2.circle(img, self.buttonHP_pos, radius=5, color=self.getColour(img,self.buttonHP_pos), thickness=-1)
-        img = cv2.circle(img, self.buttonMP_pos, radius=5, color=self.getColour(img,self.buttonMP_pos), thickness=-1)
-        img = cv2.circle(img, self.button1_pos , radius=5, color=self.getColour(img,self.button1_pos ), thickness=-1)
-        img = cv2.circle(img, self.button2_pos , radius=5, color=self.getColour(img,self.button2_pos ), thickness=-1)
-        img = cv2.circle(img, self.button3_pos , radius=5, color=self.getColour(img,self.button3_pos ), thickness=-1)
-        img = cv2.circle(img, self.button4_pos , radius=5, color=self.getColour(img,self.button4_pos ), thickness=-1)
-        img = cv2.circle(img, self.button5_pos , radius=5, color=self.getColour(img,self.button5_pos ), thickness=-1)
-        img = cv2.circle(img, self.button6_pos , radius=5, color=self.getColour(img,self.button6_pos ), thickness=-1)
-        img = cv2.circle(img, self.buttonV_pos , radius=5, color=self.getColour(img,self.buttonV_pos ), thickness=-1)
-        img = cv2.circle(img, self.buttonB_pos , radius=5, color=self.getColour(img,self.buttonB_pos ), thickness=-1)
-        img = cv2.circle(img, self.buttonN_pos , radius=5, color=self.getColour(img,self.buttonN_pos ), thickness=-1)
+        img = cv2.circle(img, self.buttonHP_pos, radius=5, color=self.getColour(img, self.buttonHP_pos), thickness=-1)
+        img = cv2.circle(img, self.buttonMP_pos, radius=5, color=self.getColour(img, self.buttonMP_pos), thickness=-1)
+        img = cv2.circle(img, self.button1_pos, radius=5, color=self.getColour(img, self.button1_pos), thickness=-1)
+        img = cv2.circle(img, self.button2_pos, radius=5, color=self.getColour(img, self.button2_pos), thickness=-1)
+        img = cv2.circle(img, self.button3_pos, radius=5, color=self.getColour(img, self.button3_pos), thickness=-1)
+        img = cv2.circle(img, self.button4_pos, radius=5, color=self.getColour(img, self.button4_pos), thickness=-1)
+        img = cv2.circle(img, self.button5_pos, radius=5, color=self.getColour(img, self.button5_pos), thickness=-1)
+        img = cv2.circle(img, self.button6_pos, radius=5, color=self.getColour(img, self.button6_pos), thickness=-1)
+        img = cv2.circle(img, self.buttonV_pos, radius=5, color=self.getColour(img, self.buttonV_pos), thickness=-1)
+        img = cv2.circle(img, self.buttonB_pos, radius=5, color=self.getColour(img, self.buttonB_pos), thickness=-1)
+        img = cv2.circle(img, self.buttonN_pos, radius=5, color=self.getColour(img, self.buttonN_pos), thickness=-1)
 
     def getColour(self, img, pos):
         color = (int(img[pos[1], pos[0]][0]),
@@ -288,63 +289,50 @@ class soulSaverBot:
         self.colorV_start = self.getColourWindow(self.buttonV_pos)
         self.colorB_start = self.getColourWindow(self.buttonB_pos)
         self.colorN_start = self.getColourWindow(self.buttonN_pos)
-        '''
+        # print(self.colorHP_start, self.colorMP_start)
+
         if ((self.IsFullScreenX != 0) and (self.IsFullScreenY != 0)):
-            self.colorHP_start = "0x4A4AFF"
-            self.colorMP_start = "0xFFEE4A"
+            self.colorHP_start = (0, 0, 247)
+            self.colorMP_start = (255, 189, 8)
         else:
-            self.colorHP_start = "0x0000FF"
-            self.colorMP_start = "0xFF7B00"
-        '''
+            self.colorHP_start = (0, 0, 247)
+            self.colorMP_start = (255, 189, 8)
+
         return
 
     def PixelUpdate(self):
-        self.colorHP = self.ahk.pixel_get_color(self.buttonHP_pos[0],
-                                                self.buttonHP_pos[1])
-        self.colorMP = self.ahk.pixel_get_color(self.buttonMP_pos[0],
-                                                self.buttonMP_pos[1])
-        self.color1 = self.ahk.pixel_get_color(self.button1_pos[0],
-                                               self.button1_pos[1])
-        self.color2 = self.ahk.pixel_get_color(self.button2_pos[0],
-                                               self.button2_pos[1])
-        self.color3 = self.ahk.pixel_get_color(self.button3_pos[0],
-                                               self.button3_pos[1])
-        self.color4 = self.ahk.pixel_get_color(self.button4_pos[0],
-                                               self.button4_pos[1])
-        self.color5 = self.ahk.pixel_get_color(self.button5_pos[0],
-                                               self.button5_pos[1])
-        self.color6 = self.ahk.pixel_get_color(self.button6_pos[0],
-                                               self.button6_pos[1])
-        self.colorV = self.ahk.pixel_get_color(self.buttonV_pos[0],
-                                               self.buttonV_pos[1])
-        self.colorB = self.ahk.pixel_get_color(self.buttonB_pos[0],
-                                               self.buttonB_pos[1])
-        self.colorN = self.ahk.pixel_get_color(self.buttonN_pos[0],
-                                               self.buttonN_pos[1])
+        self.colorHP = self.getColourWindow(self.buttonHP_pos)
+        self.colorMP = self.getColourWindow(self.buttonMP_pos)
+        self.color1 = self.getColourWindow(self.button1_pos)
+        self.color2 = self.getColourWindow(self.button2_pos)
+        self.color3 = self.getColourWindow(self.button3_pos)
+        self.color4 = self.getColourWindow(self.button4_pos)
+        self.color5 = self.getColourWindow(self.button5_pos)
+        self.color6 = self.getColourWindow(self.button6_pos)
+        self.colorV = self.getColourWindow(self.buttonV_pos)
+        self.colorB = self.getColourWindow(self.buttonB_pos)
+        self.colorN = self.getColourWindow(self.buttonN_pos)
 
     def MainTask(self):
-        '''
         if self.BuffCheck is True:
-            self.SkillExecute(self.buttonV_pos[0], self.buttonV_pos[1],
-                              self.colorV_start, "v", 1)
-            self.SkillExecute(self.buttonB_pos[0], self.buttonB_pos[1],
-                              self.colorB_start, "b", 1)
-            self.SkillExecute(self.buttonN_pos[0], self.buttonN_pos[1],
-                              self.colorN_start, "n", 1)
+            self.SkillExecute(self.buttonV_pos,
+                              self.colorV_start, "v", True)
+            self.SkillExecute(self.buttonB_pos,
+                              self.colorB_start, "b", True)
+            self.SkillExecute(self.buttonN_pos,
+                              self.colorN_start, "n", True)
             self.BuffCheck = False
-
-        self.SkillExecute(self.buttonHP_pos[0], self.buttonHP_pos[1],
-                          self.colorHP_start, "5", 1, "HP")
-        self.SkillExecute(self.buttonMP_pos[0], self.buttonMP_pos[1],
-                          self.colorMP_start, "6", 1, "MP")
-        self.SkillExecute(self.button1_pos[0], self.button1_pos[1],
+        self.SkillExecute(self.buttonHP_pos,
+                          self.colorHP_start, "5", True, "HP")
+        self.SkillExecute(self.buttonMP_pos,
+                          self.colorMP_start, "6", True, "MP")
+        self.SkillExecute(self.button1_pos,
                           self.color1_start, "1", self.SkillEnable1)
-        self.SkillExecute(self.button2_pos[0], self.button2_pos[1],
+        self.SkillExecute(self.button2_pos,
                           self.color2_start, "2", self.SkillEnable2)
-        self.SkillExecute(self.button3_pos[0], self.button3_pos[1],
+        self.SkillExecute(self.button3_pos,
                           self.color3_start, "3", self.SkillEnable3)
-        '''
-        self.SkillExecute(self.button4_pos[0], self.button4_pos[1],
+        self.SkillExecute(self.button4_pos,
                           self.color4_start, "4", self.SkillEnable4)
         self.ahk.key_up('Control')
         # KeyPressControl = "False"
@@ -352,18 +340,22 @@ class soulSaverBot:
         return
 
     def NoMainTask(self):
-        self.SkillExecute(self.buttonHP_pos[0], self.buttonHP_pos[1],
-                          self.colorHP_start, 6, 1, "HP")
-        self.SkillExecute(self.buttonMP_pos[0], self.buttonMP_pos[1],
-                          self.colorMP_start, 5, 1, "MP")
+        self.SkillExecute(self.buttonHP_pos,
+                          self.colorHP_start, "5", True, "HP")
+        self.SkillExecute(self.buttonMP_pos,
+                          self.colorMP_start, "6", True, "MP")
         return
 
-    def SkillExecute(self, MouseXNOW, MouseYNOW,
+    def SkillExecute(self, pos,
                      PixelStart, SkillButton, SkillEnable, Refills="OFF"):
+        '''
+        delay
         self.CheckAnyKeyPress()
-        if ((self.AnyKeyPress == 0 and SkillEnable == 1)
+        '''
+        # print(pos,PixelStart)
+        if ((self.AnyKeyPress is False and SkillEnable is True)
                 or (Refills == "HP" or Refills == "MP")):
-            PixelNow = self.ahk.pixel_get_color(MouseXNOW, MouseYNOW)
+            PixelNow = self.getColourWindow(pos)
             if Refills == "OFF":
                 # if PixelNow == PixelStart:
                 #     self.ahk.key_down(SkillButton)
@@ -377,12 +369,11 @@ class soulSaverBot:
                         time.sleep(0.10)
                         self.ahk.key_up(SkillButton)
                         time.sleep(0.01)
-                        PixelNow = self.ahk.pixel_get_color(MouseXNOW,
-                                                            MouseYNOW)
+                        PixelNow = self.getColourWindow(pos)
                         if (PixelNow != PixelStart
                                 or LoopChecker >= 20
-                                or self.SpacebarChecker == 1):
-                            self.SpacebarChecker = 0
+                                or self.SpacebarChecker is True):
+                            self.SpacebarChecker = False
                             break
                         LoopChecker += 1
             else:
@@ -394,19 +385,27 @@ class soulSaverBot:
         return
 
     def CheckAnyKeyPress(self):
-        KeyPressSpace = self.ahk.key_state('Control')
+        KeyPressSpace = self.ahk.key_state('Space')
         KeyPressControl = self.ahk.key_state('Control')
-        KeyPressUp = self.ahk.key_state('Control')
-        KeyPressDown = self.ahk.key_state('Control')
-        KeyPressRight = self.ahk.key_state('Control')
-        KeyPressLeft = self.ahk.key_state('Control')
+        KeyPressUp = self.ahk.key_state('Up')
+        KeyPressDown = self.ahk.key_state('Down')
+        KeyPressRight = self.ahk.key_state('Right')
+        KeyPressLeft = self.ahk.key_state('Left')
+        '''
+        print("KeyPressSpace:", KeyPressSpace,
+              "KeyPressControl:", KeyPressControl,
+              "KeyPressUp:", KeyPressUp,
+              "KeyPressDown:", KeyPressDown,
+              "KeyPressRight:", KeyPressRight,
+              "KeyPressLeft:", KeyPressLeft)
+        '''
         if (KeyPressSpace is True
                 or KeyPressControl is True
                 or KeyPressUp is True
                 or KeyPressDown is True
                 or KeyPressRight is True
                 or KeyPressLeft is True):
-            self.AnyKeyPress = 1
+            self.AnyKeyPress = True
             self.CountDownTime = 0
             if ((KeyPressRight is True or KeyPressLeft is True)
                     and (KeyPressUp is False)
@@ -414,11 +413,12 @@ class soulSaverBot:
                     and (self.PickUpEnable is False)):
                 self.ControlHold()
         else:
-            if self.CountDownTime >= 5:
-                self.AnyKeyPress = 0
+            if self.CountDownTime >= 3:
+                self.AnyKeyPress = False
             else:
-                self.AnyKeyPress = 1
+                self.AnyKeyPress = True
                 self.CountDownTime += 1
+        # print(self.CountDownTime)
 
     def ControlHold(self):
         self.ahk.key_down('Control')
@@ -426,9 +426,6 @@ class soulSaverBot:
         self.ahk.key_up('Control')
         time.sleep(0.01)
         return
-
-
-
 
 
 def main():
