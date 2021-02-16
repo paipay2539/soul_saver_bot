@@ -1,6 +1,6 @@
 from ahk import AHK
 import time
-# import threading
+import threading
 import keyboard
 import win32gui
 import pyautogui
@@ -29,14 +29,54 @@ class soulSaverBot:
         self.wpercent = 100
         self.hpercent = 100
 
+        '''
         keyboard.add_hotkey('spacebar', self.triggeredAltx)
         keyboard.add_hotkey('esc', self.triggeredEsc)
         keyboard.add_hotkey('z', self.triggeredZ)
+        '''
         '''
         cv2.namedWindow('SoulSaverOnline_cv')
         cv2.createTrackbar('axis_X', 'SoulSaverOnline_cv', 0, 255,self.nothing)
         cv2.createTrackbar('axis_Y', 'SoulSaverOnline_cv', 0, 255,self.nothing)
         '''
+        self.maintask = threading.Thread(target=self.maintask_thread)
+        self.maintask.start()  # start new threading
+        CountUpTime = 0
+        while self.Exit is False:
+            if keyboard.is_pressed('space'):
+                self.triggeredAltx()
+                if self.Active is False:
+                    self.AnyKeyPress = True
+                    CountUpTime = 0
+                time.sleep(0.1)  # prevent bouncing button
+            if keyboard.is_pressed('esc'):
+                self.triggeredEsc()
+                self.AnyKeyPress = True
+                CountUpTime = 0
+                time.sleep(0.1)  # prevent bouncing button
+            if keyboard.is_pressed('z'):
+                self.triggeredZ()
+                self.AnyKeyPress = True
+                CountUpTime = 0
+                time.sleep(0.1)  # prevent bouncing button
+            if keyboard.is_pressed('up') or \
+                    keyboard.is_pressed('down') or \
+                    keyboard.is_pressed('control') or \
+                    keyboard.is_pressed('left') or \
+                    keyboard.is_pressed('right'):
+                self.AnyKeyPress = True
+                CountUpTime = 0
+                time.sleep(0.1)  # prevent bouncing button
+            if self.AnyKeyPress is True:
+                CountUpTime = CountUpTime + 1
+            if CountUpTime > 50:  # 0.5sec cooldown
+                CountUpTime = 0
+                self.AnyKeyPress = False
+            print(CountUpTime)
+            # print(self.Active)
+            time.sleep(0.01)  # prevent CPU high processing
+
+    def maintask_thread(self):
         # time_start = time.time()
         while self.Exit is False:
             # print(1/(time.time()-time_start+0.00000001))
@@ -52,6 +92,7 @@ class soulSaverBot:
                 self.NoMainTask()
 
         cv2.destroyAllWindows()
+        threading.Event().set()
         print("end")
 
     def triggeredAltx(self):  # can't use arg
