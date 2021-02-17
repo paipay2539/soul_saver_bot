@@ -30,7 +30,7 @@ class soulSaverBot:
         self.hpercent = 100
 
         '''
-        keyboard.add_hotkey('spacebar', self.triggeredAltx)
+        keyboard.add_hotkey('spacebar', self.triggeredSpace)
         keyboard.add_hotkey('esc', self.triggeredEsc)
         keyboard.add_hotkey('z', self.triggeredZ)
         '''
@@ -41,38 +41,23 @@ class soulSaverBot:
         '''
         self.maintask = threading.Thread(target=self.maintask_thread)
         self.maintask.start()  # start new threading
-        CountUpTime = 0
+        self.CountUpTime = 0
         while self.Exit is False:
-            if keyboard.is_pressed('space'):
-                self.triggeredAltx()
-                if self.Active is False:
-                    self.AnyKeyPress = True
-                    CountUpTime = 0
-                time.sleep(0.1)  # prevent bouncing button
-            if keyboard.is_pressed('esc'):
-                self.triggeredEsc()
-                self.AnyKeyPress = True
-                CountUpTime = 0
-                time.sleep(0.1)  # prevent bouncing button
-            if keyboard.is_pressed('z'):
-                self.triggeredZ()
-                self.AnyKeyPress = True
-                CountUpTime = 0
-                time.sleep(0.1)  # prevent bouncing button
-            if keyboard.is_pressed('up') or \
-                    keyboard.is_pressed('down') or \
-                    keyboard.is_pressed('control') or \
-                    keyboard.is_pressed('left') or \
-                    keyboard.is_pressed('right'):
-                self.AnyKeyPress = True
-                CountUpTime = 0
-                time.sleep(0.1)  # prevent bouncing button
+            self.checkKey('space', self.triggeredSpace)
+            self.checkKey('esc', self.triggeredEsc)
+            self.checkKey('z', self.triggeredZ)
+            self.checkKey('up')
+            self.checkKey('down')
+            self.checkKey('control')
+            self.checkKey('left')
+            self.checkKey('right')
+
             if self.AnyKeyPress is True:
-                CountUpTime = CountUpTime + 1
-            if CountUpTime > 50:  # 0.5sec cooldown
-                CountUpTime = 0
+                self.CountUpTime = self.CountUpTime + 1
+            if self.CountUpTime > 10:  # 0.1sec cooldown
+                self.CountUpTime = 0
                 self.AnyKeyPress = False
-            print(CountUpTime)
+            # print(self.CountUpTime)
             # print(self.Active)
             time.sleep(0.01)  # prevent CPU high processing
 
@@ -95,7 +80,16 @@ class soulSaverBot:
         threading.Event().set()
         print("end")
 
-    def triggeredAltx(self):  # can't use arg
+    def checkKey(self, key, func=None):
+        if keyboard.is_pressed(str(key)):
+            if func is not None:
+                func()
+            if key != 'space' or self.Active is False:
+                self.AnyKeyPress = True
+                self.CountUpTime = 0
+            time.sleep(0.2)  # prevent bouncing button
+
+    def triggeredSpace(self):  # can't use arg
         print("space")
         if self.Counter == 0:
             self.windowScreenshot('SoulSaverOnline',  # initial ref frame
@@ -375,7 +369,7 @@ class soulSaverBot:
                           self.color3_start, "3", self.SkillEnable3)
         self.SkillExecute(self.button4_pos,
                           self.color4_start, "4", self.SkillEnable4)
-        self.ahk.key_up('Control')
+        # self.ahk.key_up('Control')
         # KeyPressControl = "False"
         # ControlHold()
         return
