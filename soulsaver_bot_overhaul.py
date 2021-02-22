@@ -7,16 +7,22 @@ import pyautogui
 import cv2
 import numpy as np
 
+'''
+import sys
+sys.dont_write_bytecode = True
+import hotkeyHook
+'''
+
 class soulSaverBot:
     def __init__(self):
         self.ahk = AHK()
         self.BuffCheck = False  # no check buff
         self.Counter = 0
         self.IsFullScreen = 0
-        self.SkillEnable1 = True
-        self.SkillEnable2 = True
-        self.SkillEnable3 = True
-        self.SkillEnable4 = True
+        self.SkillEnable1 = False  # True
+        self.SkillEnable2 = False  # True
+        self.SkillEnable3 = False  # True
+        self.SkillEnable4 = False  # True
         self.PickUpEnable = 1
         self.IsFullScreenX = 0
         self.IsFullScreenY = 0
@@ -66,15 +72,17 @@ class soulSaverBot:
         while self.Exit is False:
             # print(1/(time.time()-time_start+0.00000001))
             # time_start = time.time()
-            time.sleep(0.1)
             if self.Active is True:
                 self.MainTask()
                 '''
+                time_start = time.time()
                 self.monitoring()
+                print((time.time()-time_start))
                 '''
                 # print("mainloop")
             elif self.Active is False and self.Counter == 1:
                 self.NoMainTask()
+            time.sleep(0.1)
 
         cv2.destroyAllWindows()
         threading.Event().set()
@@ -159,12 +167,36 @@ class soulSaverBot:
         mouse_pos = (int(self.mouse_now_x), int(self.mouse_now_y))
 
         '''
+        img_gray = cv2.cvtColor(rescale_img, cv2.COLOR_BGR2GRAY)
+        template = cv2.imread('data\\character.png',0)
+        w, h = template.shape[::-1]
+        time_start = time.time()
+        res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
+        print((time.time()-time_start))
+        threshold = 0.95
+        loc = np.where( res >= threshold)
+        for pt in zip(*loc[::-1]):
+            cv2.rectangle(rescale_img, pt,
+                         (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+        '''
+
+        '''
         self.trackbars()
         trackbars_pos = (int(self.axis_X), int(self.axis_Y))
         '''
-        print("getColour:", self.getColour(rescale_img, self.button1_pos),
-              "getColourWindow:", self.getColourWindow(self.button1_pos),
-              "getColourWindowAHK:", self.getColourWindowAHK(self.button1_pos))
+        # print("getColour:", self.getColour(rescale_img, self.button1_pos),
+        #       "getColourWindow:", self.getColourWindow(self.button1_pos),
+        #       "getColourWindowAHK:", self.getColourWindowAHK(self.button1_pos))
+        '''
+        raw
+        getColour: 0.0009999275207519531
+        getColourWindow: 0.0260009765625
+        getColourWindowAHK: 0.19802093505859375
+        avg
+        getColour: 0.0
+        getColourWindow: 0.012013554573059082
+        getColourWindowAHK: 0.11300599575042725
+        '''
 
         text = "X:"+str(self.mouse_now_x)+" Y:"+str(self.mouse_now_y)
         self.drawText(rescale_img, text, text_pos)
@@ -387,6 +419,11 @@ class soulSaverBot:
         delay
         self.CheckAnyKeyPress()
         '''
+
+        #time_start = time.time()
+        #self.monitoring()
+        #print((time.time()-time_start))
+
         # print(pos,PixelStart)
         if ((self.AnyKeyPress is False and SkillEnable is True)
                 or (Refills == "HP" or Refills == "MP")):
