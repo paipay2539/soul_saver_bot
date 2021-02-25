@@ -7,11 +7,13 @@ import pyautogui
 import cv2
 import numpy as np
 
-'''
+import functools
+import operator
+
 import sys
 sys.dont_write_bytecode = True
-import hotkeyHook
-'''
+from find_sub_img_research import findsubimglib as fsi
+
 
 class soulSaverBot:
     def __init__(self):
@@ -166,19 +168,49 @@ class soulSaverBot:
         text_pos = (int(self.width/2), int(self.height/4))
         mouse_pos = (int(self.mouse_now_x), int(self.mouse_now_y))
 
-        '''
-        img_gray = cv2.cvtColor(rescale_img, cv2.COLOR_BGR2GRAY)
-        template = cv2.imread('data\\character.png',0)
-        w, h = template.shape[::-1]
-        time_start = time.time()
-        res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
-        print((time.time()-time_start))
-        threshold = 0.95
-        loc = np.where( res >= threshold)
-        for pt in zip(*loc[::-1]):
-            cv2.rectangle(rescale_img, pt,
-                         (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
-        '''
+        neko_monster = cv2.imread(r'data\pink_neko.png')
+        character = cv2.imread(r'data\character.png')
+
+        neko_monster_pos = fsi.findsubimg(rescale_img, neko_monster)
+        character_pos = fsi.findsubimg(rescale_img, character)
+
+        def character_direction(pos_lst):
+            if len(pos_lst[0]) == 0 and len(pos_lst[1]) == 1:
+                direction = "right >"
+            elif len(pos_lst[0]) == 1 and len(pos_lst[1]) == 0:
+                direction = "left <"
+            else:
+                direction = "no data"
+            return direction
+        print(character_direction(character_pos))
+
+        neko_monster_pos = functools.reduce(operator.iconcat,
+                                            neko_monster_pos, [])
+        character_pos = functools.reduce(operator.iconcat,
+                                         character_pos, [])
+
+        def mask_roi(src, pic_lst):
+            mask = np.zeros((src.shape[0], src.shape[1]), dtype=np.uint8)
+            xoffset = 50
+            yoffset = 25
+            for pos_lst in pic_lst:
+                if pos_lst is not None:
+                    for pos in pos_lst:
+                        # print(pos[0],lst)
+                        x_data = np.array([[[pos[0]-xoffset, pos[1]-yoffset],
+                                          [pos[0]-xoffset, pos[1]+yoffset],
+                                          [pos[0]+xoffset, pos[1]+yoffset],
+                                          [pos[0]+xoffset, pos[1]-yoffset]]],
+                                          dtype=np.int32)
+                        cv2.fillPoly(mask, x_data, 255)
+
+            rescale_img = cv2.bitwise_and(src, src, mask=mask)
+            return rescale_img
+        rescale_img = mask_roi(rescale_img, [neko_monster_pos, character_pos])
+
+
+
+
 
         '''
         self.trackbars()
@@ -198,12 +230,14 @@ class soulSaverBot:
         getColourWindowAHK: 0.11300599575042725
         '''
 
+
         text = "X:"+str(self.mouse_now_x)+" Y:"+str(self.mouse_now_y)
         self.drawText(rescale_img, text, text_pos)
         im = cv2.circle(rescale_img, mouse_pos, radius=5,
                         color=(0, 255, 255), thickness=-1)
         self.coloring(im)
-        # cv2.imshow('SoulSaverOnline_cv', im)
+        im, _, _ = self.rescale_frame(im, 40, 100)
+        cv2.imshow('SoulSaverOnline_cv', im)
         cv2.waitKey(1)
 
     def nothing(self):
@@ -218,6 +252,7 @@ class soulSaverBot:
     def coloring(self, img):
         show_colour = (0, 255, 255)
         special_colour =  (0, 255, 255)
+        '''
         img = cv2.circle(img, self.buttonHP_pos, radius=5, color=self.getColour(img, self.buttonHP_pos), thickness=-1)
         img = cv2.circle(img, self.buttonMP_pos, radius=5, color=self.getColour(img, self.buttonMP_pos), thickness=-1)
         img = cv2.circle(img, self.button1_pos, radius=5, color=self.getColour(img, self.button1_pos), thickness=-1)
@@ -229,6 +264,19 @@ class soulSaverBot:
         img = cv2.circle(img, self.buttonV_pos, radius=5, color=self.getColour(img, self.buttonV_pos), thickness=-1)
         img = cv2.circle(img, self.buttonB_pos, radius=5, color=self.getColour(img, self.buttonB_pos), thickness=-1)
         img = cv2.circle(img, self.buttonN_pos, radius=5, color=self.getColour(img, self.buttonN_pos), thickness=-1)
+        '''
+
+        img = cv2.circle(img, self.buttonHP_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.buttonMP_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button1_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button2_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button3_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button4_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button5_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.button6_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.buttonV_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.buttonB_pos, radius=5, color=show_colour, thickness=-1)
+        img = cv2.circle(img, self.buttonN_pos, radius=5, color=show_colour, thickness=-1)
 
     def getColour(self, img, pos):
         color = (int(img[pos[1], pos[0]][0]),
@@ -276,6 +324,21 @@ class soulSaverBot:
     def InitialPos(self):
         # self.MouseX = 180 - self.IsFullScreenX
         # self.MouseY = 43 - self.IsFullScreenY
+        '''
+        hwnd = win32gui.FindWindow(None, 'SoulSaverOnline')
+        if hwnd:
+            win32gui.SetForegroundWindow(hwnd)
+            x, y, x1, y1 = win32gui.GetClientRect(hwnd)
+            width = x1-x
+            height = y1-y
+            print(width, height)
+            start_x_offset = int(width/2) - 400
+            start_y_offset = height - 400
+            width, height
+        else:
+            print('Window not found!')
+            return
+        '''
         now_wpercent = self.wpercent
         now_hpercent = self.hpercent
         reverse_x_ratio = now_wpercent/50  # we measure position at 50pc
@@ -285,7 +348,8 @@ class soulSaverBot:
         MouseYHP = 5 * reverse_y_ratio
         MouseYMP = 13 * reverse_y_ratio
 
-        startButton1_x_pos = 213 * reverse_x_ratio
+        start_x_offset = 240  # 1280x720
+        startButton1_x_pos = start_x_offset * reverse_x_ratio
         x_pos_diff = 19 * reverse_x_ratio
         MouseX1 = startButton1_x_pos + x_pos_diff*0
         MouseX2 = startButton1_x_pos + x_pos_diff*1
@@ -298,7 +362,8 @@ class soulSaverBot:
         MouseXB = startButton1_x_pos + x_pos_diff*4
         MouseXN = startButton1_x_pos + x_pos_diff*5
 
-        startButton1_y_pos = 350 * reverse_y_ratio
+        start_y_offset = 320  # 1280x720
+        startButton1_y_pos = start_y_offset * reverse_y_ratio
         y_pos_diff = 17 * reverse_y_ratio
         MouseY1 = startButton1_y_pos
         MouseY2 = startButton1_y_pos
@@ -421,7 +486,7 @@ class soulSaverBot:
         '''
 
         #time_start = time.time()
-        #self.monitoring()
+        self.monitoring()
         #print((time.time()-time_start))
 
         # print(pos,PixelStart)

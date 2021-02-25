@@ -245,11 +245,11 @@ class soulSaverBot:
         sub_img = cv2.imread(r'data\pink_neko.png')
         # sub_img = cv2.imread(r'data\pink_neko.png', 0)
         c = time.time()
-        a = opencvFindSubImage(rescale_img, sub_img, )
+        a = opencvFindSubImage(rescale_img, sub_img, drawRectangle=False)
         d = time.time()
 
         e = time.time()
-        b = regexFindSubImage(rescale_img, sub_img,)
+        b = regexFindSubImage(rescale_img, sub_img, drawRectangle=False)
         f = time.time()
 
         print(d-c, f-e)
