@@ -7,9 +7,6 @@ import pyautogui
 import cv2
 import numpy as np
 
-import functools
-import operator
-
 import sys
 sys.dont_write_bytecode = True
 from find_sub_img_research import findsubimglib as fsi
@@ -166,6 +163,7 @@ class soulSaverBot:
 
         mid_pos = (int(self.width/2), int(self.height/2))
         text_pos = (int(self.width/2), int(self.height/4))
+        text2_pos = (int(self.width/2), int(self.height*3/4))
         mouse_pos = (int(self.mouse_now_x), int(self.mouse_now_y))
 
         neko_monster = cv2.imread(r'data\pink_neko.png')
@@ -174,51 +172,24 @@ class soulSaverBot:
         neko_monster_pos = fsi.findsubimg(rescale_img, neko_monster)
         character_pos = fsi.findsubimg(rescale_img, character)
 
-        def character_direction(pos_lst):
-            if len(pos_lst[0]) == 0 and len(pos_lst[1]) == 1:
-                direction = "right >"
-            elif len(pos_lst[0]) == 1 and len(pos_lst[1]) == 0:
-                direction = "left <"
-            else:
-                direction = "no data"
-            return direction
-        print(character_direction(character_pos))
+        character_direction = fsi.character_direction(character_pos)
 
-        neko_monster_pos = functools.reduce(operator.iconcat,
-                                            neko_monster_pos, [])
-        character_pos = functools.reduce(operator.iconcat,
-                                         character_pos, [])
+        neko_monster_pos = fsi.list_fast_flat(neko_monster_pos)
+        character_pos = fsi.list_fast_flat(character_pos)
+        # rescale_img = fsi.mask_roi(rescale_img, [neko_monster_pos, character_pos])
 
-        def mask_roi(src, pic_lst):
-            mask = np.zeros((src.shape[0], src.shape[1]), dtype=np.uint8)
-            xoffset = 50
-            yoffset = 25
-            for pos_lst in pic_lst:
-                if pos_lst is not None:
-                    for pos in pos_lst:
-                        # print(pos[0],lst)
-                        x_data = np.array([[[pos[0]-xoffset, pos[1]-yoffset],
-                                          [pos[0]-xoffset, pos[1]+yoffset],
-                                          [pos[0]+xoffset, pos[1]+yoffset],
-                                          [pos[0]+xoffset, pos[1]-yoffset]]],
-                                          dtype=np.int32)
-                        cv2.fillPoly(mask, x_data, 255)
-
-            rescale_img = cv2.bitwise_and(src, src, mask=mask)
-            return rescale_img
-        rescale_img = mask_roi(rescale_img, [neko_monster_pos, character_pos])
-
-
-
-
+        character_qpos = fsi.quantization(character_pos, self.width, self.height, rescale_img ,(255, 255, 0))
+        neko_monster_qpos = fsi.quantization(neko_monster_pos, self.width, self.height, rescale_img, (255, 0, 255))
+        mouse_qpos = fsi.quantization([mouse_pos], self.width, self.height, rescale_img, (0, 0, 255))
+        fsi.quantization_table_drawing(rescale_img, self.width, self.height)
 
         '''
         self.trackbars()
         trackbars_pos = (int(self.axis_X), int(self.axis_Y))
         '''
         # print("getColour:", self.getColour(rescale_img, self.button1_pos),
-        #       "getColourWindow:", self.getColourWindow(self.button1_pos),
-        #       "getColourWindowAHK:", self.getColourWindowAHK(self.button1_pos))
+        #     "getColourWindow:", self.getColourWindow(self.button1_pos),
+        #     "getColourWindowAHK:", self.getColourWindowAHK(self.button1_pos))
         '''
         raw
         getColour: 0.0009999275207519531
@@ -233,6 +204,7 @@ class soulSaverBot:
 
         text = "X:"+str(self.mouse_now_x)+" Y:"+str(self.mouse_now_y)
         self.drawText(rescale_img, text, text_pos)
+        self.drawText(rescale_img, character_direction, text2_pos)
         im = cv2.circle(rescale_img, mouse_pos, radius=5,
                         color=(0, 255, 255), thickness=-1)
         self.coloring(im)

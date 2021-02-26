@@ -6,6 +6,9 @@ import math
 from PIL import Image
 import re
 
+import functools
+import operator
+
 '''matchTemplate Vs regex
 conclusion (Final): opencv is more compatible to use
 (it can detect monster behind questbar)
@@ -94,6 +97,71 @@ def findsubimg(img, sub_img, method="regex", drawRectangle=True, flip=True):
         lst, lstf = regexFindSubImage(img, sub_img,
                                       drawRectangle=True, flip=True)
     return lst, lstf
+
+
+def list_fast_flat(lst):
+    return functools.reduce(operator.iconcat, lst, [])
+
+
+def character_direction(pos_lst):
+    if len(pos_lst[0]) == 0 and len(pos_lst[1]) == 1:
+        direction = "right >"
+    elif len(pos_lst[0]) == 1 and len(pos_lst[1]) == 0:
+        direction = "left <"
+    else:
+        direction = "no data"
+    return direction
+
+
+def mask_roi(src, pic_lst):
+    mask = np.zeros((src.shape[0], src.shape[1]), dtype=np.uint8)
+    xoffset = 50
+    yoffset = 25
+    for pos_lst in pic_lst:
+        if pos_lst is not None:
+            for pos in pos_lst:
+                # print(pos[0],lst)
+                x_data = np.array([[[pos[0]-xoffset, pos[1]-yoffset],
+                                  [pos[0]-xoffset, pos[1]+yoffset],
+                                  [pos[0]+xoffset, pos[1]+yoffset],
+                                  [pos[0]+xoffset, pos[1]-yoffset]]],
+                                  dtype=np.int32)
+                cv2.fillPoly(mask, x_data, 255)
+
+    rescale_img = cv2.bitwise_and(src, src, mask=mask)
+    return rescale_img
+
+
+def quantization(pos_lst, width, height, img=None, color=(0, 255, 0)):
+    x_section_num = 10  # 0-9
+    y_section_num = 10  # 0-9
+    quantize_width = int(width/x_section_num)
+    quantize_height = int(height/y_section_num)
+    for i in range(len(pos_lst)):
+        pos_lst[i] = (pos_lst[i][0] // quantize_width,
+                      pos_lst[i][1] // quantize_height)
+    if img is not None:
+        for i in range(len(pos_lst)):
+            x = pos_lst[i][0]*quantize_width
+            y = pos_lst[i][1]*quantize_height
+            w = quantize_width
+            h = quantize_height
+            img = cv2.rectangle(img,
+                                (x, y), (x+w, y+h), color, 9)
+    return pos_lst
+
+
+def quantization_table_drawing(img, width, height):
+    x_section_num = 10  # 0-9
+    y_section_num = 10  # 0-9
+    quantize_width = int(width/x_section_num)
+    quantize_height = int(height/y_section_num)
+    for i in range(x_section_num-1):
+        cv2.line(img, (int(quantize_width*(i+1)), 0),
+                 (int(quantize_width*(i+1)), height), (255, 0, 0), 1)
+    for i in range(y_section_num-1):
+        cv2.line(img, (0, (int(quantize_height*(i+1)))),
+                 (width, (int(quantize_height*(i+1)))), (255, 0, 0), 1)
 
 
 def main():
